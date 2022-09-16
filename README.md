@@ -8,7 +8,9 @@ Then to run all the projects use `yarn dev`
 
 ## Dev environment
 
-Run `docker-compose.yml` it create an mariaDB instance 
+
+
+Run `yarn install`
 
 To run projects use `yarn dev` in the root folder.
 

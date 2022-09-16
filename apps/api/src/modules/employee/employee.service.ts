@@ -55,6 +55,7 @@ export class EmployeeService {
       ...(filters?.company ? { company: { equals: filters.company } } : {}),
       ...(operator === ',' ? { company: { in: filters.company } } : {}),
       ...(filters?.company === 'empty' ? { company: null } : {}),
+      ...(operator === '-' ? { company: { notIn: filters.company }} : {}),
       ...(filters?.project ? { project: { equals: filters.project } } : {}),
       ...(operator === ',' ? { project: { in: filters.project } } : {}),
       ...(operator === '-' ? { project: { notIn: filters.project } } : {}),
