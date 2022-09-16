@@ -1,0 +1,19 @@
+version: '3'
+services:
+  employee-development-db:
+    image: mariadb:latest
+    container_name: employee-development-db
+    restart: always
+    environment:
+      - MARIADB_ROOT_PASSWORD=employee
+      - MARIADB_DATABASE=development-db
+    volumes:
+      - db_data_development:/var/lib/mysql
+    healthcheck:
+      test: ['CMD', 'mysqladmin', 'ping', '-h', 'localhost']
+      timeout: 10s
+      retries: 10
+    network_mode: "host"
+
+volumes:
+  db_data_development:

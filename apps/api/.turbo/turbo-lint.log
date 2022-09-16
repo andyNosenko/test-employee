@@ -1,0 +1,2 @@
+[35mapi:lint: [0mcache hit, replaying output [2mece84ec5b772b60a[0m
+[35mapi:lint: [0m$ eslint "{src,apps,libs,test}/**/*.ts" --fix
