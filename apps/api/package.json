@@ -5,7 +5,9 @@
     "author": "",
     "private": true,
     "license": "UNLICENSED",
-    "prisma": {},
+    "prisma": {
+        "seed": "ts-node prisma/seed.ts"
+    },
     "scripts": {
         "build": "nest build",
         "build:docker": "cd ../.. && docker build -t api -f apps/api/Dockerfile .",
