@@ -13,8 +13,8 @@ async function bootstrap() {
     // app.useGlobalFilters(new AllExceptionsFilter());
     app.setGlobalPrefix('api');
     const config = new DocumentBuilder()
-        .setTitle('Borra API')
-        .setDescription('The Borra API description')
+        .setTitle('Employee API')
+        .setDescription('The Employee API description')
         .setVersion('1.0')
         .addBearerAuth(
             {

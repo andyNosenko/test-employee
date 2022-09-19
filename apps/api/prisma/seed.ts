@@ -5,15 +5,6 @@ import {PrismaClient} from '@prisma/client';
 const prisma = new PrismaClient();
 
 async function main() {
-    for (let employee of employees) {
-        await prisma.employee.upsert({
-            where: {
-                id: employee.id,
-            },
-            create: employee,
-            update: employee,
-        });
-    }
     for (let role of roles) {
         await prisma.employeeRole.upsert({
             where: {
@@ -21,6 +12,16 @@ async function main() {
             },
             create: role,
             update: role,
+        });
+    }
+
+    for (let employee of employees) {
+        await prisma.employee.upsert({
+            where: {
+                id: employee.id,
+            },
+            create: employee,
+            update: employee,
         });
     }
 
