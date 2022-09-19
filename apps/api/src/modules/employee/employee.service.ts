@@ -7,81 +7,88 @@ export class EmployeeService {
     private _prisma: PrismaService,
   ) {}
 
-  async getAll(filters) {
-    let operator;
-    if (filters.name?.includes(',')) {
-      operator = ','
-    }
-    if (filters.company?.includes(',')) {
-      operator = ','
-    }
-    if (filters.project?.includes(',')) {
-      operator = ','
-    }
-    if (filters.role?.includes(',')) {
-      operator = ','
-    }
 
-    if (filters.name?.includes('-')) {
-      operator = '-'
-    }
-    if (filters.company?.includes('-')) {
-      operator = '-'
-    }
-    if (filters.project?.includes('-')) {
-      operator = '-'
-    }
-    if (filters.role?.includes('-')) {
-      operator = '-'
-    }
-    console.log(operator)
-    if (operator === ',') {
-      typeof filters.name === "string" ? filters.name = filters.name.split(','): null
-      typeof filters.company === "string" ? filters.company = filters.company.split(','): null
-      typeof filters.project === "string" ? filters.project = filters.project.split(','): null
-      typeof filters.role === "string" ? filters.role = filters.role.split(','): null
-    }
-    if (operator === '-') {
-      typeof filters.name === "string" ? filters.name = filters.name.split('-'): null
-      typeof filters.company === "string" ? filters.company = filters.company.split('-'): null
-      typeof filters.project === "string" ? filters.project = filters.project.split('-'): null
-      typeof filters.role === "string" ? filters.role = filters.role.split('-'): null
-    }
-    const whereOptions = {
-      ...(filters?.name ? { name: { equals: filters.name } } : {}),
-      ...(operator === ',' ? { name: { in: filters.name } } : {}),
-      ...(operator === '-' ? { name: { notIn: filters.name }} : {}),
-      ...(filters?.name === 'empty' ? { name: null } : {}),
-      ...(filters?.company ? { company: { equals: filters.company } } : {}),
-      ...(operator === ',' ? { company: { in: filters.company } } : {}),
-      ...(filters?.company === 'empty' ? { company: null } : {}),
-      ...(operator === '-' ? { company: { notIn: filters.company }} : {}),
-      ...(filters?.project ? { project: { equals: filters.project } } : {}),
-      ...(operator === ',' ? { project: { in: filters.project } } : {}),
-      ...(operator === '-' ? { project: { notIn: filters.project } } : {}),
-      ...(filters?.project === 'empty' ? { project: null } : {}),
-      ...(filters?.role ? { roles: { some: {value: {equals: filters.role}} } } : {}),
-      ...(operator === ',' ? { roles: { some: {value: {in: filters.role}} } } : {}),
-      ...(operator === '-' ? { roles: { some: {value: {notIn: filters.role}} } } : {}),
-      ...(filters?.role === 'empty' ? { roles: null } : {}),
-    };
 
-   const result = await this._prisma.employee.findMany({
-      where: whereOptions,
-      include: {
-        roles: {
-          select: {
-            value: true
-          }
+  async filter(filterArr: string[], paginationOpt: {offset?: number, limit?: number}){
+      let operatorOR
+      let operatorWith
+      let operatorExclude
+      let whereOptions = undefined
+      let valArray = []
+
+      const objectFilter= Object.entries(filterArr)
+
+    await Promise.all(objectFilter.map(async ([key, val]) =>  {
+      if (val?.includes('|')) {
+        operatorOR = '|'
+        valArray = val.split('|')
+
+        whereOptions = {
+          ...(whereOptions != undefined ? {...whereOptions}: {}),
+          ...(key === 'name' &&  valArray ? {name: {in: valArray}} : {}),
+          ...(key === 'company' &&  valArray ? {company: {in: valArray}} : {}),
+          ...(key === 'project' &&  valArray ? {project: {in: valArray}} : {}),
+          ...(key === 'role' ? { roles: { some: {value: {in: valArray}} } } : {}),
+        };
+      }
+      if (val?.includes('-')) {
+        operatorExclude = '-'
+        valArray= val.split('-')
+        whereOptions = {
+          ...(whereOptions != undefined ? {...whereOptions}: {}),
+          ...(key === 'name' && operatorExclude === '-'  ? {name: {notIn: valArray}} : {}),
+          ...(key === 'company' && operatorExclude === '-'  ? {company: {notIn: valArray}} : {}),
+          ...(key === 'project' && operatorExclude === '-'  ? {project: {notIn: valArray}} : {}),
+          ...(key === 'role' && operatorExclude === '-' ? { roles: { some: {value: {notIn: valArray}} } } : {}),
+        };
+      }
+
+      if (!val?.includes(',') && !val?.includes('|') && !val?.includes('-')) {
+        whereOptions = {
+          ...(whereOptions != undefined ? {...whereOptions}: {}),
+          ...(key === 'name' ? {name: {equals: val}} : {}),
+          ...(key === 'company' ? {company: {equals: val}} : {}),
+          ...(key === 'project' ? {project: {equals: val}} : {}),
+          ...(key === 'role' ? { roles: { some: {value: {equals: val}} } } : {}),
+        };
+      }
+
+      if (val?.includes(',')) {
+        operatorWith = ','
+        valArray = val.split(',')
+
+        whereOptions = {
+          ...(whereOptions != undefined ? {...whereOptions}: {}),
+          ...(key === 'name' &&  operatorWith === ',' ? {AND: valArray.map((item) => ({name: item}))} : {}),
+          ...(key === 'company' &&  operatorWith === ',' ? {AND: valArray.map((item) => ({company: item}))} : {}),
+          ...(key === 'project'&&  operatorWith === ',' ? {AND: valArray.map((item) => ({project: item}))} : {}),
+          ...(key === 'role' &&  operatorWith === ',' ? { roles: { some: {AND: valArray.map((item) => ({value: item}))} } } : {}),
         }
-      },
-        skip: filters?.offset ? filters.offset : undefined,
-        take: filters?.limit ? filters.limit : undefined,
-    });
+      }
+    }))
 
+      return  this._prisma.employee.findMany({
+        where: whereOptions,
+        include: {
+          roles: {
+            select: {
+              value: true
+            }
+          }
+        },
+        skip: paginationOpt?.offset ? paginationOpt.offset : undefined,
+        take: paginationOpt?.limit ? paginationOpt.limit : undefined,
+      });
+  }
+
+
+  async getAll(filters) {
+    const prepareFilters = {...filters}
+    delete prepareFilters?.offset;
+    delete prepareFilters?.limit;
 
     return {
-      result,
+      result: await this.filter(prepareFilters, {offset:filters?.offset, limit:filters?.limit}),
       pagination: await this.getPagination(filters?.limit),
       currentPage: await this.getCurrentPage(filters?.offset, filters?.limit)
     }

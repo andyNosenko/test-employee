@@ -1,0 +1,43 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model EmployeeRole {
+  id        Int        @id @default(autoincrement())
+  employees Employee[] @relation(references: [id])
+  value     Role
+}
+
+enum Role {
+  ADMIN
+  USER
+  SOFTWARE_ENGINEER
+  PROJECT_MANAGER
+  SOLUTION_ARCHITECT
+  SOLUTION_ENGINEER
+  LEAD_ENGINEER
+  DELIVERY_MANAGER
+
+}
+
+enum AuthenticationType {
+  LOCAL
+  GOOGLE
+  AZUREAD
+}
+
+model Employee {
+  id      Int            @id @default(autoincrement())
+  name    String
+  company String
+  project String
+  roles   EmployeeRole[] @relation(references: [id])
+}
