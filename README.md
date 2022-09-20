@@ -12,6 +12,8 @@ Then to run all the projects use `yarn dev`
 
 Run `yarn install`
 
-To run projects use `yarn dev` in the root folder.
+Go to `\apps\api\prisma` and run `yarn prisma:seed`
+
+To run project use `yarn dev` in the root folder.
 
 
