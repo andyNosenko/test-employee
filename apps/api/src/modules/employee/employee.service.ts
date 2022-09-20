@@ -9,9 +9,7 @@ export class EmployeeService {
     filterArr: string[],
     paginationOpt: { offset?: number; limit?: number }
   ) {
-    let operatorOR;
-    let operatorWith;
-    let operatorExclude;
+    let operator;
     let whereOptions = undefined;
     let valArray = [];
 
@@ -20,7 +18,7 @@ export class EmployeeService {
     await Promise.all(
       objectFilter.map(async ([key, val]) => {
         if (val?.includes("|")) {
-          operatorOR = "|";
+          operator = "|";
           valArray = val.split("|");
 
           whereOptions = {
@@ -38,20 +36,20 @@ export class EmployeeService {
           };
         }
         if (val?.includes("-")) {
-          operatorExclude = "-";
+          operator = "-";
           valArray = val.split("-");
           whereOptions = {
             ...(whereOptions != undefined ? { ...whereOptions } : {}),
-            ...(key === "name" && operatorExclude === "-"
+            ...(key === "name" && operator === "-"
               ? { name: { notIn: valArray } }
               : {}),
-            ...(key === "company" && operatorExclude === "-"
+            ...(key === "company" && operator === "-"
               ? { company: { notIn: valArray } }
               : {}),
-            ...(key === "project" && operatorExclude === "-"
+            ...(key === "project" && operator === "-"
               ? { project: { notIn: valArray } }
               : {}),
-            ...(key === "role" && operatorExclude === "-"
+            ...(key === "role" && operator === "-"
               ? { roles: { some: { value: { notIn: valArray } } } }
               : {}),
           };
@@ -70,21 +68,21 @@ export class EmployeeService {
         }
 
         if (val?.includes(",")) {
-          operatorWith = ",";
+          operator = ",";
           valArray = val.split(",");
 
           whereOptions = {
             ...(whereOptions != undefined ? { ...whereOptions } : {}),
-            ...(key === "name" && operatorWith === ","
+            ...(key === "name" && operator === ","
               ? { AND: valArray.map((item) => ({ name: item })) }
               : {}),
-            ...(key === "company" && operatorWith === ","
+            ...(key === "company" && operator === ","
               ? { AND: valArray.map((item) => ({ company: item })) }
               : {}),
-            ...(key === "project" && operatorWith === ","
+            ...(key === "project" && operator === ","
               ? { AND: valArray.map((item) => ({ project: item })) }
               : {}),
-            ...(key === "role" && operatorWith === ","
+            ...(key === "role" && operator === ","
               ? {
                   roles: {
                     some: { AND: valArray.map((item) => ({ value: item })) },
