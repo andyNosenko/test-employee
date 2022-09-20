@@ -1,1 +1,1 @@
-module.exports = require('config/eslint-nestjs-preset');
+module.exports = require("config/eslint-nestjs-preset");
